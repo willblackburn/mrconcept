@@ -216,17 +216,17 @@ function VideoCutGrid() {
       </svg>
       {plaque ? (
         <div
-          className="pointer-events-none absolute z-30 flex flex-col justify-end"
+          className="pointer-events-none absolute z-30 flex flex-col items-end justify-end text-right"
           style={{
             left: plaque.x,
             top: plaque.y,
             width: Math.max(plaque.width, 0),
             height: Math.max(plaque.height, 0),
-            padding: '0.55rem',
+            padding: '0.5rem',
           }}
         >
-          <p className="text-[0.6rem] tracking-[0.18em] text-white/80">Mr Concept</p>
-          <p className="mt-1 text-[0.5rem] leading-relaxed tracking-[0.14em] text-white/45">
+          <p className="text-[0.95rem] tracking-[0.16em] text-white/85">Mr Concept</p>
+          <p className="mt-1.5 text-[0.7rem] leading-snug tracking-[0.12em] text-white/50">
             artist / producer / mixing
           </p>
         </div>
