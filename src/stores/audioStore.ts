@@ -102,6 +102,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       currentTrack: track,
       currentTime: 0,
       duration: 0,
+      isPlaying: true,
     })
     startTrack(track)
   },

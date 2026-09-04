@@ -3,6 +3,7 @@ export type Track = {
   title: string
   artist: string
   audioSrc: string
+  thumbnailSrc: string
 }
 
 export const tracks: Track[] = [
@@ -11,11 +12,13 @@ export const tracks: Track[] = [
     title: 'Prodigy Planet Asia',
     artist: 'Mr Concept',
     audioSrc: '/audio/mrconcept_prodigy_planetasia.mp3',
+    thumbnailSrc: '/images/tracks/mrconcept_prodigy_planetasia.svg',
   },
   {
     id: 'track-02',
     title: 'Ra Ruggedman',
     artist: 'Mr Concept',
     audioSrc: '/audio/mrconcept_raruggedman.mp3',
+    thumbnailSrc: '/images/tracks/mrconcept_raruggedman.svg',
   },
 ]

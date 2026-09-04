@@ -1,116 +1,103 @@
+import { useRef } from 'react'
+import { tracks } from '../../data/tracks'
 import { useAudioStore } from '../../stores/audioStore'
 
-function PreviousIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M6 6h2.25v12H6V6Zm3.75 6L18 18.75V5.25L9.75 12Z" />
-    </svg>
-  )
-}
-
-function PlayIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M8 5.25v13.5L19.5 12 8 5.25Z" />
-    </svg>
-  )
-}
-
-function PauseIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M6.75 5.25h3.5v13.5h-3.5V5.25Zm7 0h3.5v13.5h-3.5V5.25Z" />
-    </svg>
-  )
-}
-
-function NextIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M15.75 6H18v12h-2.25V6ZM6 18.75 14.25 12 6 5.25v13.5Z" />
-    </svg>
-  )
-}
-
-const controlButtonClassName =
-  'inline-flex size-11 items-center justify-center text-white/90 transition-opacity duration-200 hover:text-white hover:opacity-100 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-white/80'
+const SWIPE_THRESHOLD_PX = 48
 
 export function AudioControls() {
   const currentTrack = useAudioStore((state) => state.currentTrack)
+  const currentTrackIndex = useAudioStore((state) => state.currentTrackIndex)
   const isPlaying = useAudioStore((state) => state.isPlaying)
-  const previousTrack = useAudioStore((state) => state.previousTrack)
-  const togglePlayback = useAudioStore((state) => state.togglePlayback)
+  const pause = useAudioStore((state) => state.pause)
+  const setTrack = useAudioStore((state) => state.setTrack)
   const nextTrack = useAudioStore((state) => state.nextTrack)
+  const previousTrack = useAudioStore((state) => state.previousTrack)
+  const swipeStart = useRef<{ x: number; y: number } | null>(null)
+  const didSwipe = useRef(false)
+
+  const selectTrack = (index: number) => {
+    if (currentTrackIndex === index && isPlaying) {
+      pause()
+      return
+    }
+
+    setTrack(index)
+  }
 
   return (
     <div className="flex shrink-0 justify-end px-[max(1.25rem,env(safe-area-inset-left))] pt-3 pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:pt-4 sm:pb-6">
       <div
         role="group"
-        aria-label="Playback controls"
-        className="flex items-center text-white"
+        aria-label="Track playlist"
+        className="flex touch-pan-y items-end gap-3 text-white"
+        onTouchStart={(event) => {
+          const touch = event.touches[0]
+          if (!touch) return
+          didSwipe.current = false
+          swipeStart.current = { x: touch.clientX, y: touch.clientY }
+        }}
+        onClickCapture={(event) => {
+          if (!didSwipe.current) return
+          didSwipe.current = false
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+        onTouchCancel={() => {
+          swipeStart.current = null
+        }}
+        onTouchEnd={(event) => {
+          const start = swipeStart.current
+          const touch = event.changedTouches[0]
+          swipeStart.current = null
+          if (!start || !touch) return
+
+          const deltaX = touch.clientX - start.x
+          const deltaY = touch.clientY - start.y
+          if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return
+          if (Math.abs(deltaX) < Math.abs(deltaY)) return
+
+          didSwipe.current = true
+
+          if (deltaX < 0) {
+            nextTrack()
+            return
+          }
+
+          previousTrack()
+        }}
       >
-        <p className="sr-only" aria-live="polite">
-          {currentTrack
-            ? `${currentTrack.title} by ${currentTrack.artist}`
-            : 'No track selected'}
-        </p>
-        <p
-          aria-hidden="true"
-          className="mr-3 max-w-[10rem] truncate text-[0.7rem] tracking-[0.16em] text-white/70 sm:max-w-[14rem]"
-        >
-          {currentTrack?.title ?? ''}
-        </p>
+        {tracks.map((track, index) => {
+          const isCurrent = currentTrack?.id === track.id
+          const label =
+            isCurrent && isPlaying
+              ? `Pause ${track.title}`
+              : `Play ${track.title}`
 
-        <button
-          type="button"
-          className={controlButtonClassName}
-          aria-label="Previous track"
-          onClick={previousTrack}
-        >
-          <PreviousIcon />
-        </button>
-
-        <button
-          type="button"
-          className={controlButtonClassName}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
-          onClick={togglePlayback}
-        >
-          {isPlaying ? <PauseIcon /> : <PlayIcon />}
-        </button>
-
-        <button
-          type="button"
-          className={controlButtonClassName}
-          aria-label="Next track"
-          onClick={nextTrack}
-        >
-          <NextIcon />
-        </button>
+          return (
+            <button
+              key={track.id}
+              type="button"
+              aria-label={label}
+              aria-current={isCurrent ? 'true' : undefined}
+              aria-pressed={isCurrent && isPlaying}
+              onClick={() => {
+                selectTrack(index)
+              }}
+              className={`relative size-14 overflow-hidden bg-neutral-900 sm:size-16 ${
+                isCurrent ? '' : 'opacity-70'
+              } focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-white/80`}
+            >
+              <img
+                src={track.thumbnailSrc}
+                alt=""
+                className="h-full w-full object-cover"
+                onError={(event) => {
+                  event.currentTarget.style.visibility = 'hidden'
+                }}
+              />
+            </button>
+          )
+        })}
       </div>
     </div>
   )
