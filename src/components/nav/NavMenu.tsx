@@ -51,20 +51,20 @@ export function NavMenu() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.28, ease: cinematicEase }}
-        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-50 flex size-10 flex-col items-center justify-center gap-1.5 sm:top-6 sm:right-8"
+        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-50 flex size-9 flex-col items-center justify-center gap-1.5 sm:top-6 sm:right-8 sm:size-10"
       >
         <motion.span
-          className="block h-px w-5 bg-white"
+          className="block h-px w-3.5 bg-white sm:w-5"
           animate={isOpen ? { y: 3.5, rotate: 45 } : { y: 0, rotate: 0 }}
           transition={{ duration: 0.28, ease: cinematicEase }}
         />
         <motion.span
-          className="block h-px w-5 bg-white"
+          className="block h-px w-3.5 bg-white sm:w-5"
           animate={{ opacity: isOpen ? 0 : 1 }}
           transition={{ duration: 0.2, ease: cinematicEase }}
         />
         <motion.span
-          className="block h-px w-5 bg-white"
+          className="block h-px w-3.5 bg-white sm:w-5"
           animate={isOpen ? { y: -3.5, rotate: -45 } : { y: 0, rotate: 0 }}
           transition={{ duration: 0.28, ease: cinematicEase }}
         />
@@ -88,7 +88,7 @@ export function NavMenu() {
           aria-label="Primary"
         >
           <motion.ul
-            className="flex flex-col gap-3 sm:gap-4"
+            className="flex flex-col gap-2.5 sm:gap-4"
             initial={false}
             animate={isOpen ? 'open' : 'closed'}
             variants={linkListVariants}
@@ -101,7 +101,7 @@ export function NavMenu() {
               >
                 <span
                   aria-disabled="true"
-                  className="pointer-events-none text-[1.35rem] tracking-[0.2em] text-white/50 uppercase line-through sm:text-[1.75rem]"
+                  className="pointer-events-none text-[0.95rem] tracking-[0.16em] text-white/50 uppercase line-through sm:text-[1.75rem] sm:tracking-[0.2em]"
                 >
                   {link.label}
                 </span>

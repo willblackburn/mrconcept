@@ -5,7 +5,7 @@ import { cinematicEase } from '../../styles/motion'
 export function Logo() {
   return (
     <motion.h1
-      className="m-0 text-[1.75rem] font-normal tracking-[0.22em] text-white/95 sm:text-[2.25rem]"
+      className="m-0 text-[1.25rem] font-normal tracking-[0.2em] text-white/95 sm:text-[2.25rem] sm:tracking-[0.22em]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.9, ease: cinematicEase }}
