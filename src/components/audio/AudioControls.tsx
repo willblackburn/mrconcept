@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react'
 import { useRef } from 'react'
 import { tracks } from '../../data/tracks'
 import { useAudioStore } from '../../stores/audioStore'
@@ -5,7 +6,15 @@ import {
   mediaToneFilterClassName,
   mediaToneOverlayClassName,
 } from '../../styles/mediaTone'
+import { cinematicEase } from '../../styles/motion'
 import { ThumbnailWaveform } from './ThumbnailWaveform'
+
+const thumbnailListVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.7 },
+  },
+}
 
 const SWIPE_THRESHOLD_PX = 48
 
@@ -31,10 +40,13 @@ export function AudioControls() {
 
   return (
     <div className="relative z-40 flex shrink-0 justify-end px-[max(1.25rem,env(safe-area-inset-left))] pt-3 pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:pt-4 sm:pb-6">
-      <div
+      <motion.div
         role="group"
         aria-label="Track playlist"
         className="flex touch-pan-y items-end gap-3 text-white"
+        initial="hidden"
+        animate="visible"
+        variants={thumbnailListVariants}
         onTouchStart={(event) => {
           const touch = event.touches[0]
           if (!touch) return
@@ -79,7 +91,7 @@ export function AudioControls() {
               : `Play ${track.title}`
 
           return (
-            <button
+            <motion.button
               key={track.id}
               type="button"
               aria-label={label}
@@ -88,9 +100,12 @@ export function AudioControls() {
               onClick={() => {
                 selectTrack(index)
               }}
-              className={`relative size-14 overflow-hidden bg-neutral-900 sm:size-16 ${
-                isCurrent ? '' : 'opacity-70'
-              } focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-white/80`}
+              variants={{
+                hidden: { opacity: 0, y: 10 },
+                visible: { opacity: isCurrent ? 1 : 0.7, y: 0 },
+              }}
+              transition={{ duration: 0.5, ease: cinematicEase }}
+              className="relative size-14 overflow-hidden bg-neutral-900 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-white/80 sm:size-16"
             >
               <img
                 src={track.thumbnailSrc}
@@ -104,13 +119,24 @@ export function AudioControls() {
                 aria-hidden="true"
                 className={`absolute inset-0 ${mediaToneOverlayClassName}`}
               />
-              {isCurrent && isPlaying ? (
-                <ThumbnailWaveform trackId={track.id} />
-              ) : null}
-            </button>
+              <AnimatePresence>
+                {isCurrent && isPlaying ? (
+                  <motion.div
+                    key={track.id}
+                    className="absolute inset-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35, ease: cinematicEase }}
+                  >
+                    <ThumbnailWaveform trackId={track.id} />
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </motion.button>
           )
         })}
-      </div>
+      </motion.div>
     </div>
   )
 }

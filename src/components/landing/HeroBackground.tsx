@@ -1,9 +1,23 @@
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useAudioStore } from '../../stores/audioStore'
 import {
   mediaToneFilterClassName,
   mediaToneOverlayClassName,
 } from '../../styles/mediaTone'
+import { cinematicEase } from '../../styles/motion'
+
+const plaqueListVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.45 },
+  },
+}
+
+const plaqueLineVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0 },
+}
 
 const YOUTUBE_VIDEO_ID = 'NvZBcsF3UHw'
 const YOUTUBE_API_SRC = 'https://www.youtube.com/iframe_api'
@@ -123,6 +137,7 @@ function measureCutLayout(width: number, height: number, gutter: number): {
 type YouTubePlayer = {
   mute: () => void
   playVideo: () => void
+  seekTo: (seconds: number, allowSeekAhead?: boolean) => void
   destroy: () => void
   unloadModule: (moduleName: string) => void
   setOption?: (module: string, option: string, value: unknown) => void
@@ -232,7 +247,7 @@ function VideoCutGrid() {
         />
       </svg>
       {plaque ? (
-        <div
+        <motion.div
           className="pointer-events-none fixed z-40 flex flex-col items-end justify-end pt-[clamp(0.4rem,0.45vw,1.25rem)] pr-0 pb-0 pl-[clamp(0.4rem,0.45vw,1.25rem)] text-right"
           style={{
             left: size.left + plaque.x,
@@ -240,17 +255,43 @@ function VideoCutGrid() {
             width: Math.max(plaque.width, 0),
             height: Math.max(plaque.height, 0),
           }}
+          initial="hidden"
+          animate="visible"
+          variants={plaqueListVariants}
         >
-          <p className="text-[clamp(0.75rem,0.55vw+0.5rem,1.85rem)] tracking-[0.16em] text-white/85">
+          <motion.p
+            className="text-[clamp(0.75rem,0.55vw+0.5rem,1.85rem)] tracking-[0.16em] text-white/85"
+            variants={plaqueLineVariants}
+            transition={{ duration: 0.6, ease: cinematicEase }}
+          >
             MR CONCEPT
-          </p>
-          <p className="mt-[clamp(0.25rem,0.18vw,0.5rem)] text-[clamp(0.55rem,0.36vw+0.4rem,1.1rem)] leading-snug tracking-[0.08em] text-white/50 uppercase sm:tracking-widest">
+          </motion.p>
+          <motion.p
+            className="mt-[clamp(0.25rem,0.18vw,0.5rem)] text-[clamp(0.55rem,0.36vw+0.4rem,1.1rem)] leading-snug tracking-[0.08em] text-white/50 uppercase sm:tracking-widest"
+            variants={plaqueLineVariants}
+            transition={{ duration: 0.6, ease: cinematicEase }}
+          >
             producer | mixing engineer
-          </p>
-          <p className="mt-[clamp(0.4rem,0.2vw,0.65rem)] text-[clamp(0.55rem,0.34vw+0.4rem,1.05rem)] tracking-[0.12em] text-brand uppercase">
-            {currentTrackTitle}
-          </p>
-        </div>
+          </motion.p>
+          <motion.div
+            className="mt-[clamp(0.4rem,0.2vw,0.65rem)]"
+            variants={plaqueLineVariants}
+            transition={{ duration: 0.6, ease: cinematicEase }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={currentTrackTitle || 'track'}
+                className="text-[clamp(0.55rem,0.34vw+0.4rem,1.05rem)] tracking-[0.12em] text-brand uppercase"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35, ease: cinematicEase }}
+              >
+                {currentTrackTitle}
+              </motion.p>
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
       ) : null}
     </>
   )
@@ -336,8 +377,6 @@ export function HeroBackground() {
         playerVars: {
           autoplay: 1,
           mute: 1,
-          loop: 1,
-          playlist: YOUTUBE_VIDEO_ID,
           controls: 0,
           disablekb: 1,
           fs: 0,
@@ -364,10 +403,13 @@ export function HeroBackground() {
               hideCaptions(event.target)
             }
 
-            if (
-              event.data === youtube.PlayerState.PAUSED ||
-              event.data === youtube.PlayerState.ENDED
-            ) {
+            if (event.data === youtube.PlayerState.PAUSED) {
+              event.target.mute()
+              event.target.playVideo()
+            }
+
+            if (event.data === youtube.PlayerState.ENDED) {
+              event.target.seekTo(0, true)
               event.target.mute()
               event.target.playVideo()
             }
@@ -385,18 +427,25 @@ export function HeroBackground() {
 
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden bg-neutral-950">
-      {shouldPlayVideo ? (
+      <motion.div
+        className="absolute inset-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2, ease: cinematicEase }}
+      >
+        {shouldPlayVideo ? (
+          <div
+            className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-[2.75] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
+            aria-hidden="true"
+          >
+            <div ref={playerMountRef} className="h-full w-full" />
+          </div>
+        ) : null}
         <div
-          className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-[2.75] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
+          className={`absolute inset-0 z-10 ${mediaToneOverlayClassName}`}
           aria-hidden="true"
-        >
-          <div ref={playerMountRef} className="h-full w-full" />
-        </div>
-      ) : null}
-      <div
-        className={`absolute inset-0 z-10 ${mediaToneOverlayClassName}`}
-        aria-hidden="true"
-      />
+        />
+      </motion.div>
       <VideoCutGrid />
     </div>
   )

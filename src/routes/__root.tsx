@@ -5,11 +5,13 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router'
+import { MotionConfig } from 'motion/react'
 import type { ReactNode } from 'react'
 import { AudioControls } from '../components/audio/AudioControls'
 import { AudioEngine } from '../components/audio/AudioEngine'
 import { NavMenu } from '../components/nav/NavMenu'
 import appCss from '../styles/app.css?url'
+import { cinematicEase } from '../styles/motion'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -38,12 +40,14 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <HeadContent />
       </head>
       <body className="h-dvh overflow-hidden bg-neutral-950 text-neutral-50 antialiased">
-        <div className="flex h-dvh flex-col">
-          {children}
-          <AudioEngine />
-          <AudioControls />
-          <NavMenu />
-        </div>
+        <MotionConfig reducedMotion="user" transition={{ ease: cinematicEase }}>
+          <div className="flex h-dvh flex-col">
+            {children}
+            <AudioEngine />
+            <AudioControls />
+            <NavMenu />
+          </div>
+        </MotionConfig>
         <Scripts />
       </body>
     </html>
