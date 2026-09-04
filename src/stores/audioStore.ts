@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { pausePlayer, startTrack } from '../components/audio/player'
 import { tracks, type Track } from '../data/tracks'
 
 type AudioState = {
@@ -20,45 +21,56 @@ type AudioState = {
   setVolume: (volume: number) => void
 }
 
-function trackAt(queue: Track[], index: number): Track | null {
-  return queue[index] ?? null
+function trackAt(index: number): Track | null {
+  return tracks[index] ?? null
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
   queue: tracks,
   currentTrackIndex: 0,
-  currentTrack: trackAt(tracks, 0),
+  currentTrack: trackAt(0),
   isPlaying: false,
   currentTime: 0,
   duration: 0,
   volume: 1,
 
   play: () => {
-    if (!get().currentTrack) return
+    const track = get().currentTrack
+    if (!track) return
     set({ isPlaying: true })
+    startTrack(track)
   },
 
   pause: () => {
     set({ isPlaying: false })
+    pausePlayer()
   },
 
   togglePlayback: () => {
-    const { currentTrack, isPlaying } = get()
-    if (!currentTrack) return
-    set({ isPlaying: !isPlaying })
+    if (get().isPlaying) {
+      get().pause()
+      return
+    }
+
+    get().play()
   },
 
   nextTrack: () => {
     if (tracks.length === 0) return
 
     const nextIndex = (get().currentTrackIndex + 1) % tracks.length
+    const track = trackAt(nextIndex)
+    if (!track) return
+
     set({
       queue: tracks,
       currentTrackIndex: nextIndex,
-      currentTrack: trackAt(tracks, nextIndex),
+      currentTrack: track,
       currentTime: 0,
       duration: 0,
+      isPlaying: true,
     })
+    startTrack(track)
   },
 
   previousTrack: () => {
@@ -66,25 +78,32 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
     const previousIndex =
       (get().currentTrackIndex - 1 + tracks.length) % tracks.length
+    const track = trackAt(previousIndex)
+    if (!track) return
+
     set({
       queue: tracks,
       currentTrackIndex: previousIndex,
-      currentTrack: trackAt(tracks, previousIndex),
+      currentTrack: track,
       currentTime: 0,
       duration: 0,
+      isPlaying: true,
     })
+    startTrack(track)
   },
 
   setTrack: (index) => {
-    if (index < 0 || index >= tracks.length) return
+    const track = trackAt(index)
+    if (!track) return
 
     set({
       queue: tracks,
       currentTrackIndex: index,
-      currentTrack: trackAt(tracks, index),
+      currentTrack: track,
       currentTime: 0,
       duration: 0,
     })
+    startTrack(track)
   },
 
   setCurrentTime: (time) => {
