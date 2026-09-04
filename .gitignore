@@ -8,9 +8,6 @@ dist
 .DS_Store
 .env
 .env.*
-public/audio/*.wav
-public/audio/*.mp3
-public/audio/*.flac
 public/images/*.jpg
 public/images/*.jpeg
 public/images/*.png
