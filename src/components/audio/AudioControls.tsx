@@ -67,11 +67,11 @@ export function AudioControls() {
   const nextTrack = useAudioStore((state) => state.nextTrack)
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-end pr-[max(1rem,env(safe-area-inset-right))] pb-[max(1.25rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] sm:pr-[max(1.75rem,env(safe-area-inset-right))] sm:pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+    <div className="flex shrink-0 justify-end px-[max(1.25rem,env(safe-area-inset-left))] pt-3 pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:pt-4 sm:pb-6">
       <div
         role="group"
         aria-label="Playback controls"
-        className="pointer-events-auto flex items-center text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.65)]"
+        className="flex items-center text-white"
       >
         <p className="sr-only" aria-live="polite">
           {currentTrack

@@ -36,10 +36,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-neutral-950 text-neutral-50 antialiased">
-        {children}
-        <AudioEngine />
-        <AudioControls />
+      <body className="h-dvh overflow-hidden bg-neutral-950 text-neutral-50 antialiased">
+        <div className="flex h-dvh flex-col">
+          {children}
+          <AudioEngine />
+          <AudioControls />
+        </div>
         <Scripts />
       </body>
     </html>

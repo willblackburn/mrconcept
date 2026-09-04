@@ -180,13 +180,16 @@ export function HeroBackground() {
   }, [shouldPlayVideo])
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-neutral-950" aria-hidden="true">
+    <div
+      className="relative min-h-0 flex-1 overflow-hidden bg-neutral-950"
+      aria-hidden="true"
+    >
       {shouldPlayVideo ? (
-        <div className="pointer-events-none absolute top-1/2 left-1/2 z-0 aspect-video w-[max(250vw,400dvh)] -translate-x-1/2 -translate-y-1/2 [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0">
+        <div className="pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-[2.75] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0">
           <div ref={playerMountRef} className="h-full w-full" />
         </div>
       ) : null}
-      <div className="absolute inset-0 z-10 bg-black/40" />
+      <div className="absolute inset-0 z-10 bg-black/25" />
     </div>
   )
 }
