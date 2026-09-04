@@ -51,7 +51,7 @@ export function NavMenu() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.28, ease: cinematicEase }}
-        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-50 flex size-9 flex-col items-center justify-center gap-1.5 sm:top-6 sm:right-8 sm:size-10"
+        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-50 flex size-9 flex-col items-end justify-center gap-1.5 sm:top-6 sm:right-8 sm:size-10"
       >
         <motion.span
           className="block h-px w-3.5 bg-white sm:w-5"
