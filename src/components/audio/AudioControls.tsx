@@ -1,6 +1,11 @@
 import { useRef } from 'react'
 import { tracks } from '../../data/tracks'
 import { useAudioStore } from '../../stores/audioStore'
+import {
+  mediaToneFilterClassName,
+  mediaToneOverlayClassName,
+} from '../../styles/mediaTone'
+import { ThumbnailWaveform } from './ThumbnailWaveform'
 
 const SWIPE_THRESHOLD_PX = 48
 
@@ -25,7 +30,7 @@ export function AudioControls() {
   }
 
   return (
-    <div className="flex shrink-0 justify-end px-[max(1.25rem,env(safe-area-inset-left))] pt-3 pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:pt-4 sm:pb-6">
+    <div className="relative z-40 flex shrink-0 justify-end px-[max(1.25rem,env(safe-area-inset-left))] pt-3 pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:pt-4 sm:pb-6">
       <div
         role="group"
         aria-label="Track playlist"
@@ -90,11 +95,18 @@ export function AudioControls() {
               <img
                 src={track.thumbnailSrc}
                 alt=""
-                className="h-full w-full object-cover"
+                className={`h-full w-full object-cover ${mediaToneFilterClassName}`}
                 onError={(event) => {
                   event.currentTarget.style.visibility = 'hidden'
                 }}
               />
+              <span
+                aria-hidden="true"
+                className={`absolute inset-0 ${mediaToneOverlayClassName}`}
+              />
+              {isCurrent && isPlaying ? (
+                <ThumbnailWaveform trackId={track.id} />
+              ) : null}
             </button>
           )
         })}

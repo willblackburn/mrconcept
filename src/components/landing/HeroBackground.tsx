@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAudioStore } from '../../stores/audioStore'
+import {
+  mediaToneFilterClassName,
+  mediaToneOverlayClassName,
+} from '../../styles/mediaTone'
 
 const YOUTUBE_VIDEO_ID = 'NvZBcsF3UHw'
 const YOUTUBE_API_SRC = 'https://www.youtube.com/iframe_api'
@@ -96,8 +100,13 @@ function measureCutLayout(width: number, height: number, gutter: number): {
     { x: 0, y: bottomY, width, height: bottomHeight },
   ]
 
-  const plaqueWidth = Math.min(...videos.map((hole) => hole.width))
-  const plaqueHeight = Math.min(...videos.map((hole) => hole.height))
+  const smallestWidth = Math.min(...videos.map((hole) => hole.width))
+  const smallestHeight = Math.min(...videos.map((hole) => hole.height))
+  const plaqueWidth =
+    width < 640
+      ? Math.max(smallestWidth, Math.min(width * 0.52, 240))
+      : smallestWidth
+  const plaqueHeight = smallestHeight
   const plaque = {
     x: width - plaqueWidth,
     y: height - plaqueHeight,
@@ -163,7 +172,7 @@ function sizeYouTubeFrame(root: HTMLElement) {
 function VideoCutGrid() {
   const maskId = 'mrc-video-cuts'
   const rootRef = useRef<SVGSVGElement>(null)
-  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [size, setSize] = useState({ width: 0, height: 0, left: 0, top: 0 })
   const currentTrackTitle = useAudioStore((state) => state.currentTrack?.title ?? '')
 
   useEffect(() => {
@@ -173,7 +182,13 @@ function VideoCutGrid() {
     }
 
     const update = () => {
-      setSize({ width: root.clientWidth, height: root.clientHeight })
+      const box = root.getBoundingClientRect()
+      setSize({
+        width: root.clientWidth,
+        height: root.clientHeight,
+        left: box.left,
+        top: box.top,
+      })
     }
 
     update()
@@ -218,21 +233,21 @@ function VideoCutGrid() {
       </svg>
       {plaque ? (
         <div
-          className="pointer-events-none absolute z-30 flex flex-col items-end justify-end p-1.5 text-right sm:p-2"
+          className="pointer-events-none fixed z-40 flex flex-col items-end justify-end pt-[clamp(0.4rem,0.45vw,1.25rem)] pr-0 pb-0 pl-[clamp(0.4rem,0.45vw,1.25rem)] text-right"
           style={{
-            left: plaque.x,
-            top: plaque.y,
+            left: size.left + plaque.x,
+            top: size.top + plaque.y,
             width: Math.max(plaque.width, 0),
             height: Math.max(plaque.height, 0),
           }}
         >
-          <p className="text-[0.65rem] tracking-[0.16em] text-white/85 sm:text-[0.95rem]">
+          <p className="text-[clamp(0.75rem,0.55vw+0.5rem,1.85rem)] tracking-[0.16em] text-white/85">
             MR CONCEPT
           </p>
-          <p className="mt-1 text-[0.45rem] leading-snug tracking-[0.08em] text-white/50 sm:mt-1.5 sm:text-[0.65rem] sm:tracking-widest">
-            producer / mixing engineer
+          <p className="mt-[clamp(0.25rem,0.18vw,0.5rem)] text-[clamp(0.55rem,0.36vw+0.4rem,1.1rem)] leading-snug tracking-[0.08em] text-white/50 uppercase sm:tracking-widest">
+            producer | mixing engineer
           </p>
-          <p className="mt-2 text-[0.45rem] tracking-[0.12em] text-white/40 sm:mt-2.5 sm:text-[0.6rem]">
+          <p className="mt-[clamp(0.4rem,0.2vw,0.65rem)] text-[clamp(0.55rem,0.34vw+0.4rem,1.05rem)] tracking-[0.12em] text-brand uppercase">
             {currentTrackTitle}
           </p>
         </div>
@@ -372,13 +387,16 @@ export function HeroBackground() {
     <div className="relative min-h-0 flex-1 overflow-hidden bg-neutral-950">
       {shouldPlayVideo ? (
         <div
-          className="pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-[2.75] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0"
+          className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-[2.75] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
           aria-hidden="true"
         >
           <div ref={playerMountRef} className="h-full w-full" />
         </div>
       ) : null}
-      <div className="absolute inset-0 z-10 bg-black/25" aria-hidden="true" />
+      <div
+        className={`absolute inset-0 z-10 ${mediaToneOverlayClassName}`}
+        aria-hidden="true"
+      />
       <VideoCutGrid />
     </div>
   )

@@ -8,6 +8,7 @@ import {
 import type { ReactNode } from 'react'
 import { AudioControls } from '../components/audio/AudioControls'
 import { AudioEngine } from '../components/audio/AudioEngine'
+import { NavMenu } from '../components/nav/NavMenu'
 import appCss from '../styles/app.css?url'
 
 export const Route = createRootRoute({
@@ -41,6 +42,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
           {children}
           <AudioEngine />
           <AudioControls />
+          <NavMenu />
         </div>
         <Scripts />
       </body>
