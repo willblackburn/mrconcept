@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAudioStore } from '../../stores/audioStore'
 
 const YOUTUBE_VIDEO_ID = 'NvZBcsF3UHw'
 const YOUTUBE_API_SRC = 'https://www.youtube.com/iframe_api'
@@ -163,6 +164,7 @@ function VideoCutGrid() {
   const maskId = 'mrc-video-cuts'
   const rootRef = useRef<SVGSVGElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
+  const currentTrackTitle = useAudioStore((state) => state.currentTrack?.title ?? '')
 
   useEffect(() => {
     const root = rootRef.current
@@ -216,18 +218,22 @@ function VideoCutGrid() {
       </svg>
       {plaque ? (
         <div
-          className="pointer-events-none absolute z-30 flex flex-col items-end justify-end text-right"
+          className="pointer-events-none absolute z-30 flex flex-col items-end justify-end p-1.5 text-right sm:p-2"
           style={{
             left: plaque.x,
             top: plaque.y,
             width: Math.max(plaque.width, 0),
             height: Math.max(plaque.height, 0),
-            padding: '0.5rem',
           }}
         >
-          <p className="text-[0.95rem] tracking-[0.16em] text-white/85">Mr Concept</p>
-          <p className="mt-1.5 text-[0.7rem] leading-snug tracking-[0.12em] text-white/50">
-            artist / producer / mixing
+          <p className="text-[0.65rem] tracking-[0.16em] text-white/85 sm:text-[0.95rem]">
+            MR CONCEPT
+          </p>
+          <p className="mt-1 text-[0.45rem] leading-snug tracking-[0.08em] text-white/50 sm:mt-1.5 sm:text-[0.65rem] sm:tracking-widest">
+            producer / mixing engineer
+          </p>
+          <p className="mt-2 text-[0.45rem] tracking-[0.12em] text-white/40 sm:mt-2.5 sm:text-[0.6rem]">
+            {currentTrackTitle}
           </p>
         </div>
       ) : null}
