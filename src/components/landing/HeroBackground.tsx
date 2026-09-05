@@ -19,7 +19,7 @@ const plaqueLineVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const YOUTUBE_VIDEO_ID = 'NvZBcsF3UHw';
+const YOUTUBE_VIDEO_ID = 'B1l4Mxz5D0Y';
 const YOUTUBE_API_SRC = 'https://www.youtube.com/iframe_api';
 const PAGE_BACKGROUND = '#0a0a0a';
 const CUT_GUTTER = 14;
@@ -190,13 +190,18 @@ function sizeYouTubeFrame(root: HTMLElement) {
   iframe.style.height = '100%';
 }
 
-function heroCoverScale(width: number, height: number, extra: number) {
-  if (width <= 0 || height <= 0) {
+function heroCoverScale(
+  width: number,
+  height: number,
+  aspect: number,
+  extra: number,
+) {
+  if (width <= 0 || height <= 0 || aspect <= 0) {
     return 2.75;
   }
 
-  const fittedHeight = width * (9 / 16);
-  const fittedWidth = height * (16 / 9);
+  const fittedHeight = width / aspect;
+  const fittedWidth = height * aspect;
   return Math.max(height / fittedHeight, width / fittedWidth) * extra;
 }
 
@@ -390,6 +395,8 @@ export function HeroBackground() {
     YOUTUBE_VIDEO_ID;
   const playbackRate =
     useAudioStore((state) => state.currentTrack?.youtubePlaybackRate) ?? 1;
+  const coverAspect =
+    useAudioStore((state) => state.currentTrack?.youtubeAspect) ?? 16 / 9;
   const coverExtra =
     useAudioStore((state) => state.currentTrack?.youtubeCoverExtra) ?? 1.2;
 
@@ -404,7 +411,12 @@ export function HeroBackground() {
 
     const update = () => {
       setCoverScale(
-        heroCoverScale(panel.clientWidth, panel.clientHeight, coverExtra),
+        heroCoverScale(
+          panel.clientWidth,
+          panel.clientHeight,
+          coverAspect,
+          coverExtra,
+        ),
       );
     };
 
@@ -415,7 +427,7 @@ export function HeroBackground() {
     return () => {
       observer.disconnect();
     };
-  }, [coverExtra]);
+  }, [coverAspect, coverExtra]);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

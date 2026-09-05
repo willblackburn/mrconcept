@@ -6,6 +6,7 @@ export type Track = {
   thumbnailSrc: string
   youtubeId?: string
   youtubePlaybackRate?: number
+  youtubeAspect?: number
   youtubeCoverExtra?: number
 }
 
@@ -16,6 +17,8 @@ export const tracks: Track[] = [
     artist: 'Mr Concept',
     audioSrc: '/audio/mrconcept_prodigy_planetasia.mp3',
     thumbnailSrc: '/images/tracks/mrconcept_prodigy_planetasia.png',
+    youtubeId: 'B1l4Mxz5D0Y',
+    youtubeAspect: 4 / 3,
   },
   {
     id: 'track-02',
