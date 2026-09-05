@@ -20,9 +20,26 @@ export function AudioEngine() {
       useAudioStore.getState().nextTrack()
     }
 
+    const pauseForBackground = () => {
+      useAudioStore.getState().pause()
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        pauseForBackground()
+      }
+    }
+
     player.addEventListener('ended', onEnded)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('pagehide', pauseForBackground)
+    window.addEventListener('freeze', pauseForBackground)
+
     return () => {
       player.removeEventListener('ended', onEnded)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('pagehide', pauseForBackground)
+      window.removeEventListener('freeze', pauseForBackground)
     }
   }, [])
 
