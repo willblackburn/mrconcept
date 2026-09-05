@@ -6,6 +6,7 @@ export type Track = {
   thumbnailSrc: string
   youtubeId?: string
   youtubePlaybackRate?: number
+  youtubeCoverExtra?: number
 }
 
 export const tracks: Track[] = [
@@ -24,5 +25,6 @@ export const tracks: Track[] = [
     thumbnailSrc: '/images/tracks/mrconcept_raruggedman.png',
     youtubeId: 'qLuJSzs-3lE',
     youtubePlaybackRate: 0.75,
+    youtubeCoverExtra: 1.7,
   },
 ]

@@ -190,6 +190,16 @@ function sizeYouTubeFrame(root: HTMLElement) {
   iframe.style.height = '100%';
 }
 
+function heroCoverScale(width: number, height: number, extra: number) {
+  if (width <= 0 || height <= 0) {
+    return 2.75;
+  }
+
+  const fittedHeight = width * (9 / 16);
+  const fittedWidth = height * (16 / 9);
+  return Math.max(height / fittedHeight, width / fittedWidth) * extra;
+}
+
 function VideoCutGrid() {
   const maskId = 'mrc-video-cuts';
   const rootRef = useRef<SVGSVGElement>(null);
@@ -347,11 +357,16 @@ function applyHeroVideo(
   player: YouTubePlayer,
   videoId: string,
   playbackRate: number,
+  frameRoot?: HTMLElement | null,
 ) {
   player.mute();
   player.loadVideoById(videoId);
   applyPlaybackRate(player, playbackRate);
   hideCaptions(player);
+  if (frameRoot) {
+    sizeYouTubeFrame(frameRoot);
+    window.requestAnimationFrame(() => sizeYouTubeFrame(frameRoot));
+  }
 }
 
 function applyPlaybackRate(player: YouTubePlayer, playbackRate: number) {
@@ -363,19 +378,44 @@ function applyPlaybackRate(player: YouTubePlayer, playbackRate: number) {
 }
 
 export function HeroBackground() {
+  const panelRef = useRef<HTMLDivElement>(null);
   const playerMountRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const videoIdRef = useRef(YOUTUBE_VIDEO_ID);
   const playbackRateRef = useRef(1);
   const [shouldPlayVideo, setShouldPlayVideo] = useState(false);
+  const [coverScale, setCoverScale] = useState(2.75);
   const videoId =
     useAudioStore((state) => state.currentTrack?.youtubeId) ??
     YOUTUBE_VIDEO_ID;
   const playbackRate =
     useAudioStore((state) => state.currentTrack?.youtubePlaybackRate) ?? 1;
+  const coverExtra =
+    useAudioStore((state) => state.currentTrack?.youtubeCoverExtra) ?? 1.2;
 
   videoIdRef.current = videoId;
   playbackRateRef.current = playbackRate;
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) {
+      return;
+    }
+
+    const update = () => {
+      setCoverScale(
+        heroCoverScale(panel.clientWidth, panel.clientHeight, coverExtra),
+      );
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(panel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [coverExtra]);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -432,6 +472,7 @@ export function HeroBackground() {
               event.target,
               videoIdRef.current,
               playbackRateRef.current,
+              mountParent,
             );
             sizeYouTubeFrame(mountParent);
             window.setTimeout(() => hideCaptions(event.target), 250);
@@ -443,6 +484,7 @@ export function HeroBackground() {
             if (event.data === youtube.PlayerState.PLAYING) {
               hideCaptions(event.target);
               applyPlaybackRate(event.target, playbackRateRef.current);
+              sizeYouTubeFrame(mountParent);
             }
 
             if (event.data === youtube.PlayerState.PAUSED) {
@@ -474,11 +516,13 @@ export function HeroBackground() {
       return;
     }
 
-    applyHeroVideo(player, videoId, playbackRate);
+    applyHeroVideo(player, videoId, playbackRate, playerMountRef.current);
   }, [playbackRate, videoId]);
 
   return (
-    <div className='relative min-h-0 flex-1 overflow-hidden bg-neutral-950'>
+    <div
+      ref={panelRef}
+      className='relative min-h-0 flex-1 overflow-hidden bg-neutral-950'>
       <motion.div
         className='absolute inset-0'
         initial={{ opacity: 0 }}
@@ -486,7 +530,8 @@ export function HeroBackground() {
         transition={{ duration: 1.2, ease: cinematicEase }}>
         {shouldPlayVideo ? (
           <div
-            className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-[2.75] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
+            className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
+            style={{ transform: `translate(-50%, -50%) scale(${coverScale})` }}
             aria-hidden='true'>
             <div ref={playerMountRef} className='h-full w-full' />
           </div>
