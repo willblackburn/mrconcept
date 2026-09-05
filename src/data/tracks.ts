@@ -4,6 +4,10 @@ export type Track = {
   artist: string
   audioSrc: string
   thumbnailSrc: string
+  heroVideoSrc?: string
+  heroStartTime?: number
+  heroAspect?: number
+  heroCoverExtra?: number
   youtubeId?: string
   youtubePlaybackRate?: number
   youtubeAspect?: number
@@ -17,8 +21,10 @@ export const tracks: Track[] = [
     artist: 'Mr Concept',
     audioSrc: '/audio/mrconcept_prodigy_planetasia.mp3',
     thumbnailSrc: '/images/tracks/mrconcept_prodigy_planetasia.png',
-    youtubeId: 'B1l4Mxz5D0Y',
-    youtubeAspect: 4 / 3,
+    heroVideoSrc:
+      'https://pub-4abdd2ac536542ff8d27ddc8937c2ce0.r2.dev/harlem_1970.mp4',
+    heroAspect: 4 / 3,
+    heroCoverExtra: 1.2,
   },
   {
     id: 'track-02',
@@ -26,8 +32,10 @@ export const tracks: Track[] = [
     artist: 'Mr Concept',
     audioSrc: '/audio/mrconcept_raruggedman.mp3',
     thumbnailSrc: '/images/tracks/mrconcept_raruggedman.png',
-    youtubeId: 'qLuJSzs-3lE',
+    heroVideoSrc:
+      'https://pub-4abdd2ac536542ff8d27ddc8937c2ce0.r2.dev/ruggedman_loser.mp4',
+    heroStartTime: 1,
+    heroCoverExtra: 1.7,
     youtubePlaybackRate: 0.75,
-    youtubeCoverExtra: 1.7,
   },
 ]

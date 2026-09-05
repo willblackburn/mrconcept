@@ -190,19 +190,33 @@ function sizeYouTubeFrame(root: HTMLElement) {
   iframe.style.height = '100%';
 }
 
+function containSize(width: number, height: number, aspect: number) {
+  if (width / height > aspect) {
+    return { width: height * aspect, height };
+  }
+
+  return { width, height: width / aspect };
+}
+
 function heroCoverScale(
   width: number,
   height: number,
-  aspect: number,
+  mediaAspect: number,
+  pictureAspect: number,
   extra: number,
 ) {
-  if (width <= 0 || height <= 0 || aspect <= 0) {
+  if (
+    width <= 0 ||
+    height <= 0 ||
+    mediaAspect <= 0 ||
+    pictureAspect <= 0
+  ) {
     return 2.75;
   }
 
-  const fittedHeight = width / aspect;
-  const fittedWidth = height * aspect;
-  return Math.max(height / fittedHeight, width / fittedWidth) * extra;
+  const media = containSize(width, height, mediaAspect);
+  const picture = containSize(media.width, media.height, pictureAspect);
+  return Math.max(width / picture.width, height / picture.height) * extra;
 }
 
 function VideoCutGrid() {
@@ -390,18 +404,30 @@ export function HeroBackground() {
   const playbackRateRef = useRef(1);
   const [shouldPlayVideo, setShouldPlayVideo] = useState(false);
   const [coverScale, setCoverScale] = useState(2.75);
+  const [fileAspect, setFileAspect] = useState(16 / 9);
+  const heroVideoSrc = useAudioStore(
+    (state) => state.currentTrack?.heroVideoSrc,
+  );
+  const heroStartTime =
+    useAudioStore((state) => state.currentTrack?.heroStartTime) ?? 0;
   const videoId =
     useAudioStore((state) => state.currentTrack?.youtubeId) ??
     YOUTUBE_VIDEO_ID;
   const playbackRate =
     useAudioStore((state) => state.currentTrack?.youtubePlaybackRate) ?? 1;
-  const coverAspect =
-    useAudioStore((state) => state.currentTrack?.youtubeAspect) ?? 16 / 9;
+  const currentTrack = useAudioStore((state) => state.currentTrack);
+  const pictureAspect =
+    currentTrack?.heroAspect ?? currentTrack?.youtubeAspect ?? 16 / 9;
   const coverExtra =
-    useAudioStore((state) => state.currentTrack?.youtubeCoverExtra) ?? 1.2;
+    currentTrack?.heroCoverExtra ?? currentTrack?.youtubeCoverExtra ?? 1.2;
+  const mediaAspect = heroVideoSrc ? fileAspect : 16 / 9;
 
   videoIdRef.current = videoId;
   playbackRateRef.current = playbackRate;
+
+  useEffect(() => {
+    setFileAspect(16 / 9);
+  }, [heroVideoSrc]);
 
   useEffect(() => {
     const panel = panelRef.current;
@@ -414,7 +440,8 @@ export function HeroBackground() {
         heroCoverScale(
           panel.clientWidth,
           panel.clientHeight,
-          coverAspect,
+          mediaAspect,
+          pictureAspect,
           coverExtra,
         ),
       );
@@ -427,7 +454,7 @@ export function HeroBackground() {
     return () => {
       observer.disconnect();
     };
-  }, [coverAspect, coverExtra]);
+  }, [coverExtra, mediaAspect, pictureAspect]);
 
   useEffect(() => {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -445,7 +472,7 @@ export function HeroBackground() {
 
   useEffect(() => {
     const mountParent = playerMountRef.current;
-    if (!shouldPlayVideo || !mountParent) {
+    if (!shouldPlayVideo || heroVideoSrc || !mountParent) {
       return;
     }
 
@@ -520,16 +547,16 @@ export function HeroBackground() {
       player?.destroy();
       host.remove();
     };
-  }, [shouldPlayVideo]);
+  }, [heroVideoSrc, shouldPlayVideo]);
 
   useEffect(() => {
     const player = playerRef.current;
-    if (!player) {
+    if (!player || heroVideoSrc) {
       return;
     }
 
     applyHeroVideo(player, videoId, playbackRate, playerMountRef.current);
-  }, [playbackRate, videoId]);
+  }, [heroVideoSrc, playbackRate, videoId]);
 
   return (
     <div
@@ -540,7 +567,46 @@ export function HeroBackground() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, ease: cinematicEase }}>
-        {shouldPlayVideo ? (
+        {shouldPlayVideo && heroVideoSrc ? (
+          <div
+            className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full ${mediaToneFilterClassName}`}
+            style={{ transform: `translate(-50%, -50%) scale(${coverScale})` }}
+            aria-hidden='true'>
+            <video
+              key={`${heroVideoSrc}-${heroStartTime}`}
+              className='h-full w-full object-contain'
+              src={
+                heroStartTime > 0
+                  ? `${heroVideoSrc}#t=${heroStartTime}`
+                  : heroVideoSrc
+              }
+              muted
+              autoPlay
+              loop={heroStartTime <= 0}
+              playsInline
+              preload='auto'
+              onLoadedMetadata={(event) => {
+                const video = event.currentTarget;
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                  setFileAspect(video.videoWidth / video.videoHeight);
+                }
+                video.playbackRate = playbackRate;
+                if (heroStartTime > 0) {
+                  video.currentTime = heroStartTime;
+                }
+              }}
+              onEnded={(event) => {
+                if (heroStartTime <= 0) {
+                  return;
+                }
+
+                const video = event.currentTarget;
+                video.currentTime = heroStartTime;
+                void video.play();
+              }}
+            />
+          </div>
+        ) : shouldPlayVideo ? (
           <div
             className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
             style={{ transform: `translate(-50%, -50%) scale(${coverScale})` }}
