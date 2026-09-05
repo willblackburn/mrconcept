@@ -14,7 +14,10 @@ export function Logo() {
         to="/"
         className="rounded-sm focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-4 focus-visible:outline-white/70"
       >
-        MRC
+        <span aria-hidden="true">MRC</span>
+        <span className="sr-only">
+          Mr Concept — Music Producer and Mixing Engineer
+        </span>
       </Link>
     </motion.h1>
   )

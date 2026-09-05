@@ -4,6 +4,8 @@ export type Track = {
   artist: string
   audioSrc: string
   thumbnailSrc: string
+  youtubeId?: string
+  youtubePlaybackRate?: number
 }
 
 export const tracks: Track[] = [
@@ -20,5 +22,7 @@ export const tracks: Track[] = [
     artist: 'Mr Concept',
     audioSrc: '/audio/mrconcept_raruggedman.mp3',
     thumbnailSrc: '/images/tracks/mrconcept_raruggedman.png',
+    youtubeId: 'qLuJSzs-3lE',
+    youtubePlaybackRate: 0.75,
   },
 ]
