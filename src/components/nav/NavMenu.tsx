@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { navLinks } from '../../data/navLinks'
@@ -51,7 +52,7 @@ export function NavMenu() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.28, ease: cinematicEase }}
-        className="fixed top-[max(1.75rem,env(safe-area-inset-top))] right-[max(1.75rem,env(safe-area-inset-right))] z-50 flex size-9 flex-col items-end justify-center gap-1.5 overflow-visible outline-none sm:top-7 sm:right-10 sm:size-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.75rem,env(safe-area-inset-right))] z-50 flex h-[1.875rem] w-9 flex-col items-end justify-center gap-1.5 overflow-visible outline-none sm:top-6 sm:right-10 sm:h-[3.375rem] sm:w-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"
       >
         <motion.span
           className="block h-px w-3.5 bg-white sm:w-5"
@@ -99,12 +100,22 @@ export function NavMenu() {
                 variants={linkItemVariants}
                 transition={{ duration: 0.45, ease: cinematicEase }}
               >
-                <span
-                  aria-disabled="true"
-                  className="pointer-events-none text-[0.95rem] tracking-[0.16em] text-white/50 uppercase line-through sm:text-[1.75rem] sm:tracking-[0.2em]"
-                >
-                  {link.label}
-                </span>
+                {'live' in link && link.live ? (
+                  <Link
+                    to="/enquiries"
+                    onClick={close}
+                    className="text-[0.95rem] tracking-[0.16em] text-white uppercase sm:text-[1.75rem] sm:tracking-[0.2em] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <span
+                    aria-disabled="true"
+                    className="pointer-events-none text-[0.95rem] tracking-[0.16em] text-white/50 uppercase line-through sm:text-[1.75rem] sm:tracking-[0.2em]"
+                  >
+                    {link.label}
+                  </span>
+                )}
               </motion.li>
             ))}
           </motion.ul>

@@ -5,6 +5,7 @@ import { MotionConfig } from 'motion/react';
 import type { ReactNode } from 'react';
 import { AudioControls } from '../components/audio/AudioControls';
 import { AudioEngine } from '../components/audio/AudioEngine';
+import { SiteChrome } from '../components/layout/SiteChrome';
 import { NavMenu } from '../components/nav/NavMenu';
 import {
   SITE_DESCRIPTION,
@@ -66,6 +67,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <body className='h-dvh overflow-hidden bg-neutral-950 text-neutral-50 antialiased'>
         <MotionConfig reducedMotion='user' transition={{ ease: cinematicEase }}>
           <div className='flex h-dvh flex-col'>
+            <SiteChrome />
             {children}
             <AudioEngine />
             <AudioControls />
