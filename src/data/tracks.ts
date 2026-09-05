@@ -33,7 +33,7 @@ export const tracks: Track[] = [
     audioSrc: '/audio/mrconcept_raruggedman.mp3',
     thumbnailSrc: '/images/tracks/mrconcept_raruggedman.png',
     heroVideoSrc:
-      'https://pub-4abdd2ac536542ff8d27ddc8937c2ce0.r2.dev/ruggedman_loser.mp4',
+      'https://pub-4abdd2ac536542ff8d27ddc8937c2ce0.r2.dev/ruggedman_loser1.mp4',
     heroStartTime: 1,
     heroCoverExtra: 1.7,
     youtubePlaybackRate: 0.75,
