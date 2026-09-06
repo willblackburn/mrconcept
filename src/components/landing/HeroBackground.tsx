@@ -1,3 +1,4 @@
+import { useRouterState } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { useAudioStore } from '../../stores/audioStore';
@@ -219,7 +220,7 @@ function heroCoverScale(
   return Math.max(width / picture.width, height / picture.height) * extra;
 }
 
-function VideoCutGrid() {
+function VideoCutGrid({ hideMask }: { hideMask: boolean }) {
   const maskId = 'mrc-video-cuts';
   const rootRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0, left: 0, top: 0 });
@@ -264,27 +265,31 @@ function VideoCutGrid() {
         ref={rootRef}
         className='pointer-events-none absolute inset-0 z-20 h-full w-full'
         aria-hidden='true'>
-        <defs>
-          <mask id={maskId}>
-            <rect width='100%' height='100%' fill='white' />
-            {videos.map((hole) => (
-              <rect
-                key={`${hole.x}-${hole.y}-${hole.width}-${hole.height}`}
-                x={hole.x}
-                y={hole.y}
-                width={Math.max(hole.width, 0)}
-                height={Math.max(hole.height, 0)}
-                fill='black'
-              />
-            ))}
-          </mask>
-        </defs>
-        <rect
-          width='100%'
-          height='100%'
-          fill={PAGE_BACKGROUND}
-          mask={`url(#${maskId})`}
-        />
+        {hideMask ? null : (
+          <>
+            <defs>
+              <mask id={maskId}>
+                <rect width='100%' height='100%' fill='white' />
+                {videos.map((hole) => (
+                  <rect
+                    key={`${hole.x}-${hole.y}-${hole.width}-${hole.height}`}
+                    x={hole.x}
+                    y={hole.y}
+                    width={Math.max(hole.width, 0)}
+                    height={Math.max(hole.height, 0)}
+                    fill='black'
+                  />
+                ))}
+              </mask>
+            </defs>
+            <rect
+              width='100%'
+              height='100%'
+              fill={PAGE_BACKGROUND}
+              mask={`url(#${maskId})`}
+            />
+          </>
+        )}
       </svg>
       {plaque ? (
         <motion.div
@@ -402,9 +407,15 @@ export function HeroBackground() {
   const playerRef = useRef<YouTubePlayer | null>(null);
   const videoIdRef = useRef(YOUTUBE_VIDEO_ID);
   const playbackRateRef = useRef(1);
+  const isEnquiries = useRouterState({
+    select: (state) => state.location.pathname === '/enquiries',
+  });
   const [shouldPlayVideo, setShouldPlayVideo] = useState(false);
   const [coverScale, setCoverScale] = useState(2.75);
   const [fileAspect, setFileAspect] = useState(16 / 9);
+  const panelSizeRef = useRef({ width: 0, height: 0 });
+  const videoPlayingRef = useRef(false);
+  const didSeekStartRef = useRef(false);
   const heroVideoSrc = useAudioStore(
     (state) => state.currentTrack?.heroVideoSrc,
   );
@@ -427,6 +438,8 @@ export function HeroBackground() {
 
   useEffect(() => {
     setFileAspect(16 / 9);
+    videoPlayingRef.current = false;
+    didSeekStartRef.current = false;
   }, [heroVideoSrc]);
 
   useEffect(() => {
@@ -435,20 +448,28 @@ export function HeroBackground() {
       return;
     }
 
-    const update = () => {
+    const update = (force = false) => {
+      const width = panel.clientWidth;
+      const height = panel.clientHeight;
+      const previous = panelSizeRef.current;
+      const widthChanged = Math.abs(width - previous.width) >= 32;
+
+      if (
+        !force &&
+        videoPlayingRef.current &&
+        !widthChanged
+      ) {
+        return;
+      }
+
+      panelSizeRef.current = { width, height };
       setCoverScale(
-        heroCoverScale(
-          panel.clientWidth,
-          panel.clientHeight,
-          mediaAspect,
-          pictureAspect,
-          coverExtra,
-        ),
+        heroCoverScale(width, height, mediaAspect, pictureAspect, coverExtra),
       );
     };
 
-    update();
-    const observer = new ResizeObserver(update);
+    update(true);
+    const observer = new ResizeObserver(() => update(false));
     observer.observe(panel);
 
     return () => {
@@ -521,6 +542,7 @@ export function HeroBackground() {
             hideCaptions(event.target);
 
             if (event.data === youtube.PlayerState.PLAYING) {
+              videoPlayingRef.current = true;
               hideCaptions(event.target);
               applyPlaybackRate(event.target, playbackRateRef.current);
               sizeYouTubeFrame(mountParent);
@@ -567,7 +589,7 @@ export function HeroBackground() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, ease: cinematicEase }}>
-        {shouldPlayVideo && heroVideoSrc ? (
+        {!isEnquiries && shouldPlayVideo && heroVideoSrc ? (
           <div
             className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full ${mediaToneFilterClassName}`}
             style={{ transform: `translate(-50%, -50%) scale(${coverScale})` }}
@@ -575,11 +597,7 @@ export function HeroBackground() {
             <video
               key={`${heroVideoSrc}-${heroStartTime}`}
               className='h-full w-full object-contain'
-              src={
-                heroStartTime > 0
-                  ? `${heroVideoSrc}#t=${heroStartTime}`
-                  : heroVideoSrc
-              }
+              src={heroVideoSrc}
               muted
               autoPlay
               loop={heroStartTime <= 0}
@@ -588,12 +606,19 @@ export function HeroBackground() {
               onLoadedMetadata={(event) => {
                 const video = event.currentTarget;
                 if (video.videoWidth > 0 && video.videoHeight > 0) {
-                  setFileAspect(video.videoWidth / video.videoHeight);
+                  const nextAspect = video.videoWidth / video.videoHeight;
+                  setFileAspect((current) =>
+                    Math.abs(current - nextAspect) < 0.01 ? current : nextAspect,
+                  );
                 }
                 video.playbackRate = playbackRate;
-                if (heroStartTime > 0) {
+                if (heroStartTime > 0 && !didSeekStartRef.current) {
+                  didSeekStartRef.current = true;
                   video.currentTime = heroStartTime;
                 }
+              }}
+              onPlaying={() => {
+                videoPlayingRef.current = true;
               }}
               onEnded={(event) => {
                 if (heroStartTime <= 0) {
@@ -606,7 +631,7 @@ export function HeroBackground() {
               }}
             />
           </div>
-        ) : shouldPlayVideo ? (
+        ) : !isEnquiries && shouldPlayVideo ? (
           <div
             className={`pointer-events-none absolute top-1/2 left-1/2 z-0 h-full w-full [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0 ${mediaToneFilterClassName}`}
             style={{ transform: `translate(-50%, -50%) scale(${coverScale})` }}
@@ -614,12 +639,14 @@ export function HeroBackground() {
             <div ref={playerMountRef} className='h-full w-full' />
           </div>
         ) : null}
-        <div
-          className={`absolute inset-0 z-10 ${mediaToneOverlayClassName}`}
-          aria-hidden='true'
-        />
+        {isEnquiries ? null : (
+          <div
+            className={`absolute inset-0 z-10 ${mediaToneOverlayClassName}`}
+            aria-hidden='true'
+          />
+        )}
       </motion.div>
-      <VideoCutGrid />
+      <VideoCutGrid hideMask={isEnquiries} />
     </div>
   );
 }

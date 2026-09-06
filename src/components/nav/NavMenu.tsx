@@ -80,7 +80,7 @@ export function NavMenu() {
         initial={false}
         animate={{ x: isOpen ? 0 : '-100%' }}
         transition={{ duration: 0.55, ease: cinematicEase }}
-        className={`fixed inset-0 z-20 bg-[#0a0a0a] ${
+        className={`fixed inset-0 z-30 bg-[#0a0a0a] ${
           isOpen ? '' : 'pointer-events-none'
         }`}
       >

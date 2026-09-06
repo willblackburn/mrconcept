@@ -98,7 +98,7 @@ function Enquiries() {
   }
 
   return (
-    <main className="pointer-events-none fixed inset-0 z-[15] bg-[#0a0a0a]">
+    <main className="pointer-events-none fixed inset-0 z-30 bg-[#0a0a0a]">
       <motion.div
         className="flex h-full flex-col px-[max(1.25rem,env(safe-area-inset-left))] pt-[28dvh] pr-[max(1.25rem,env(safe-area-inset-right))] sm:px-8"
         initial="hidden"
