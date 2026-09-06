@@ -52,23 +52,33 @@ export function NavMenu() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.28, ease: cinematicEase }}
-        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.75rem,env(safe-area-inset-right))] z-50 flex h-[1.875rem] w-9 flex-col items-end justify-center gap-1.5 overflow-visible outline-none sm:top-6 sm:right-10 sm:h-[3.375rem] sm:w-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"
+        className="fixed top-[max(1.25rem,env(safe-area-inset-top))] right-[max(1.25rem,env(safe-area-inset-right))] z-50 flex h-[1.5em] w-10 items-center justify-end overflow-visible text-[1.25rem] outline-none sm:top-6 sm:right-8 sm:w-12 sm:text-[2.25rem] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/70"
       >
-        <motion.span
-          className="block h-px w-3.5 bg-white sm:w-5"
-          animate={isOpen ? { y: 3.5, rotate: 45 } : { y: 0, rotate: 0 }}
-          transition={{ duration: 0.28, ease: cinematicEase }}
-        />
-        <motion.span
-          className="block h-px w-3.5 bg-white sm:w-5"
-          animate={{ opacity: isOpen ? 0 : 1 }}
-          transition={{ duration: 0.2, ease: cinematicEase }}
-        />
-        <motion.span
-          className="block h-px w-3.5 bg-white sm:w-5"
-          animate={isOpen ? { y: -3.5, rotate: -45 } : { y: 0, rotate: 0 }}
-          transition={{ duration: 0.28, ease: cinematicEase }}
-        />
+        <span className="relative block size-4.5 overflow-visible text-white sm:size-6">
+          <motion.svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+            className="absolute inset-0 size-full"
+            animate={{ opacity: isOpen ? 0 : 1 }}
+            transition={{ duration: 0.2, ease: cinematicEase }}
+          >
+            <path d="M2 7h20" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M2 17h20" stroke="currentColor" strokeWidth="1.5" />
+          </motion.svg>
+          <motion.svg
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+            className="absolute inset-0 size-full"
+            animate={{ opacity: isOpen ? 1 : 0 }}
+            transition={{ duration: 0.2, ease: cinematicEase }}
+          >
+            <path d="M4 4l16 16" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M20 4L4 20" stroke="currentColor" strokeWidth="1.5" />
+          </motion.svg>
+        </span>
       </motion.button>
 
       <motion.div
